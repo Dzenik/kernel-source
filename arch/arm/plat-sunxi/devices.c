@@ -113,7 +113,35 @@ struct platform_device sw_pdev_nand =
 	.dev = {}
 };
 
-#ifndef CONFIG_ARCH_SUN7I
+#ifdef CONFIG_ARCH_SUN7I
+/*
+ * The PMU IRQ lines of two cores are wired together into a single interrupt.
+ * Bounce the interrupt to the other core if it's not ours.
+ *
+ * This code is borrowed from db8500_pmu_handler as advised by:
+ * http://thread.gmane.org/gmane.linux.ports.arm.kernel/181392/focus=181597
+ */
+static irqreturn_t sun7i_pmu_handler(int irq, void *dev, irq_handler_t handler)
+{
+        irqreturn_t ret = handler(irq, dev);
+        int other = !smp_processor_id();
+
+        if (ret == IRQ_NONE && cpu_online(other))
+                irq_set_affinity(irq, cpumask_of(other));
+
+        /*
+         * We should be able to get away with the amount of IRQ_NONEs we give,
+         * while still having the spurious IRQ detection code kick in if the
+         * interrupt really starts hitting spuriously.
+         */
+        return ret;
+}
+
+static struct arm_pmu_platdata sun7i_pmu_platdata = {
+        .handle_irq        = sun7i_pmu_handler,
+};
+#endif 
+
 static struct resource sunxi_pmu_resources[] = {
 	{
 		.start	= SW_INT_IRQNO_PLE_PFM,
@@ -127,8 +155,10 @@ struct platform_device sunxi_pmu_device = {
 	.id		= ARM_PMU_DEVICE_CPU,
 	.resource	= sunxi_pmu_resources,
 	.num_resources	= ARRAY_SIZE(sunxi_pmu_resources),
-};
+#ifdef CONFIG_ARCH_SUN7I
+        .dev.platform_data = &sun7i_pmu_platdata,
 #endif
+};
 
 #if defined(CONFIG_MALI_DRM) || defined(CONFIG_MALI_DRM_MODULE)
 static struct platform_device sunxi_device_mali_drm = {
@@ -143,9 +173,7 @@ static struct platform_device *sw_pdevs[] __initdata = {
 #endif
 	&sw_pdev_dmac,
 	&sw_pdev_nand,
-#ifndef CONFIG_ARCH_SUN7I
 	&sunxi_pmu_device,
-#endif
 #if defined(CONFIG_MALI_DRM) || defined(CONFIG_MALI_DRM_MODULE)
 	&sunxi_device_mali_drm,
 #endif

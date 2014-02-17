@@ -265,7 +265,14 @@ static void __init sw_core_reserve(void)
 	pr_info("Memory Reserved:\n");
 	reserve_sys();
 	/* 0 - 64M is used by reserve_sys */
+#ifdef CONFIG_CMA
+	/* We want CMA area to be in the first 256MB of RAM (for Cedar),
+	 * so move other reservations above
+	 */
+	reserved_start = meminfo.bank[0].start + SZ_256M;
+#else
 	reserved_start = meminfo.bank[0].start + SZ_64M;
+#endif
 	reserved_max   = meminfo.bank[0].start + meminfo.bank[0].size;
 #ifdef CONFIG_FB_SUNXI_RESERVED_MEM
 	if (reserved_mali_mem) {
@@ -275,7 +282,7 @@ static void __init sw_core_reserve(void)
 			reserved_max = fb_start;
 	}
 #endif
-#ifdef RESERVE_VE_MEM
+#if !defined(CONFIG_CMA) && defined(RESERVE_VE_MEM)
 	reserve_mem(&ve_start, &ve_size, "VE  ");
 #endif
 #if IS_ENABLED(CONFIG_SUNXI_G2D)
@@ -341,7 +348,7 @@ static void sw_irq_unmask(struct irq_data *irqd)
 		writel(readl(SW_INT_ENABLE_REG0) | (1<<irq), SW_INT_ENABLE_REG0);
 		writel(readl(SW_INT_MASK_REG0) & ~(1 << irq), SW_INT_MASK_REG0);
 		if(irq == SW_INT_IRQNO_ENMI) /* must clear pending bit when enabled */
-			writel((1 << SW_INT_IRQNO_ENMI), SW_INT_IRQ_PENDING_REG0);
+			writel((1UL << SW_INT_IRQNO_ENMI), SW_INT_IRQ_PENDING_REG0);
 	} else if(irq < 64){
 		irq -= 32;
 		writel(readl(SW_INT_ENABLE_REG1) | (1<<irq), SW_INT_ENABLE_REG1);

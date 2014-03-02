@@ -346,21 +346,13 @@ static int ext4_valid_extent_entries(struct inode *inode,
 	if (depth == 0) {
 		/* leaf entries */
 		struct ext4_extent *ext = EXT_FIRST_EXTENT(eh);
-		while (entries) {
-			if (!ext4_valid_extent(inode, ext))
-				return 0;
-			ext++;
-			entries--;
-		}
-	} else {
-		struct ext4_extent_idx *ext_idx = EXT_FIRST_INDEX(eh);
 		struct ext4_super_block *es = EXT4_SB(inode->i_sb)->s_es;
 		ext4_fsblk_t pblock = 0;
 		ext4_lblk_t lblock = 0;
 		ext4_lblk_t prev = 0;
 		int len = 0;
 		while (entries) {
-			if (!ext4_valid_extent_idx(inode, ext_idx))
+			if (!ext4_valid_extent(inode, ext))
 				return 0;
 
 			/* Check for overlapping extents */
@@ -371,9 +363,17 @@ static int ext4_valid_extent_entries(struct inode *inode,
 				es->s_last_error_block = cpu_to_le64(pblock);
 				return 0;
 			}
-			ext_idx++;
+			ext++;
 			entries--;
 			prev = lblock + len - 1;
+		}
+	} else {
+		struct ext4_extent_idx *ext_idx = EXT_FIRST_INDEX(eh);
+		while (entries) {
+			if (!ext4_valid_extent_idx(inode, ext_idx))
+				return 0;
+			ext_idx++;
+			entries--;
 		}
 	}
 	return 1;

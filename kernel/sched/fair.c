@@ -1837,9 +1837,7 @@ static const u64 min_cfs_rq_runtime = 1 * NSEC_PER_MSEC;
 static const u64 min_bandwidth_expiration = 2 * NSEC_PER_MSEC;
 /* how long we wait to gather additional slack before distributing */
 static const u64 cfs_bandwidth_slack_period = 5 * NSEC_PER_MSEC;
-
-+/*
-
+/*
  * Are we near the end of the current quota period?
  *
  * Requires cfs_b->lock for hrtimer_expires_remaining to be safe against the

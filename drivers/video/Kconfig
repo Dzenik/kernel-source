@@ -2458,6 +2458,30 @@ source "drivers/video/omap2/Kconfig"
 source "drivers/video/exynos/Kconfig"
 source "drivers/video/backlight/Kconfig"
 
+config FB_SSD1289
+	tristate "Solomon Systech SSD1289 controller support"
+	depends on FB
+	select FB_SYS_FILLRECT
+	select FB_SYS_COPYAREA
+	select FB_SYS_IMAGEBLIT
+	select FB_SYS_FOPS
+	select FB_DEFERRED_IO
+	help
+	  This is a framebuffer device for the Solomon Systek SSD1289
+	  controller.
+
+choice
+	prompt "SSD1289 LCD Controller Interface mode"
+	depends on FB_SSD1289
+
+config SSD1289_DIRECTIO_MODE 
+	bool "LCD controller is in I/O-space"
+
+config SSD1289_SPI_MODE
+	bool "LCD controller is connected over SPI using 4094/4020-ICs"
+
+endchoice
+
 if VT
 	source "drivers/video/console/Kconfig"
 endif

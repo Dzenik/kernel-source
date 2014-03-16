@@ -772,7 +772,10 @@ static void ads7846_report_state(struct ads7846 *ts)
 {
 	struct ads7846_packet *packet = ts->packet;
 	unsigned int Rt;
-	u16 x, y, z1, z2;
+	u16 x, y, x1,y1,z1, z2;
+
+	// struct spi_device *dev=ts->spi;
+	struct ads7846_platform_data *pdata = ts->spi->dev.platform_data;
 
 	/*
 	 * ads7846_get_value() does in-place conversion (including byte swap)
@@ -848,8 +851,16 @@ static void ads7846_report_state(struct ads7846 *ts)
 	if (Rt) {
 		struct input_dev *input = ts->input;
 
+		x1=x;
+		y1=y;
+
 		if (ts->swap_xy)
 			swap(x, y);
+
+		x=pdata->x_max+320-x;
+		y=pdata->y_max+280-y;
+
+		// printk(KERN_ERR "ads7846_report_state orig_x=%d orig_y=%d x=%d y=%d \n",x1,y1, x,y);
 
 		if (!ts->pendown) {
 			input_report_key(input, BTN_TOUCH, 1);
@@ -1200,6 +1211,8 @@ static int __devinit ads7846_probe(struct spi_device *spi)
 	struct ads7846_platform_data *pdata = spi->dev.platform_data;
 	unsigned long irq_flags;
 	int err;
+
+	printk(KERN_ERR "ads7846_probe!!\n");
 
 	if (!spi->irq) {
 		dev_dbg(&spi->dev, "no IRQ?\n");

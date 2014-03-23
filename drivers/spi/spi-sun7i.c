@@ -33,6 +33,7 @@
 #include <plat/sys_config.h>
 #include <mach/spi.h>
 
+//#define SSD1289_SPI_MODE
 #define SPI_DEBUG_LEVEL 2
 
 #if (SPI_DEBUG_LEVEL == 1)
@@ -2026,6 +2027,41 @@ static int sun7i_spi_get_cfg_csbitmap(int bus_num)
 
 }
 
+#ifdef SSD1289_SPI_MODE
+
+static struct platform_device spi_ssd1289_info = {
+    .name = "ssd1289",
+    .parts = NULL,
+    .nr_parts = 0,
+    .type = "spi_ssd1289",
+};
+
+static struct spi_board_info spi_ssd1289 = {
+    .modalias = "spi-ssd1289",
+    .platform_data = &spi_ssd1289_info,
+    .mode = SPI_MODE_2,
+    .irq = 0,
+    .max_speed_hz = 32 * 1000 * 1000,
+    .bus_num = 2,
+    .chip_select = 0,
+};
+
+static void __init sun7i_spi_ssd1289(void)
+{
+    if (spi_register_board_info(&spi_ssd1289, 1)) {
+        spi_err("%s: Register spi_ssd1289:%s information failed\n",
+                __func__, spi_ssd1289_info.type);
+    } else {
+        spi_inf("%s: Register spi_ssd1289:%s information OK\n",
+                __func__, spi_ssd1289_info.type);
+    }
+}
+#else
+#warning "sun7i_spi_ssd1289 not used"
+static void __init sun7i_spi_ssd1289(void)
+{}
+#endif
+
 #ifdef CONFIG_SUN7I_SPI_NORFLASH
 #include <linux/spi/flash.h>
 #include <linux/mtd/partitions.h>
@@ -2104,7 +2140,8 @@ static int __init spi_sun7i_init(void)
         spi_err("register spi devices board info failed \n");
     }
 
-//    sun7i_spi_norflash();
+    sun7i_spi_norflash();
+    sun7i_spi_ssd1289();
 
     if (spi_used & SPI0_USED_MASK)
         platform_device_register(&sun7i_spi0_device);

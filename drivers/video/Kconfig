@@ -2479,6 +2479,7 @@ config SSD1289_DIRECTIO_MODE
 
 config SSD1289_SPI_MODE
 	bool "LCD controller is connected over SPI using 4094/4020-ICs"
+	depends on (SPI_SUN4I || SPI_SUN5I || SPI_SUN7I)
 
 endchoice
 

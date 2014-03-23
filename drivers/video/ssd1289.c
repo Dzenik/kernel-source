@@ -37,6 +37,8 @@
  * can't get my hands on a cheap one.
  */
 
+#define DEBUG
+
 #include <linux/kernel.h>
 #include <linux/device.h>
 #include <linux/module.h>
@@ -85,6 +87,10 @@
 #define SSD1289_REG_SECND_WIN_END    0x4b
 #define SSD1289_REG_GDDRAM_X_ADDR    0x4e
 #define SSD1289_REG_GDDRAM_Y_ADDR    0x4f
+
+static const char *dev_spi = "/dev/spidev0.0";
+module_param(dev_spi, charp, 0000);
+MODULE_PARM_DESC(dev_spi, "SPI device to use (default=/dev/spidev0.0)");
 
 struct ssd1289_page {
 	unsigned short x;

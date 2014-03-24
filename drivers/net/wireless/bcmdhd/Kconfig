@@ -37,9 +37,9 @@ config BCMDHD_OOB
 	---help---
 		Interrupt through WL_HOST_WAKE.
 config BCMDHD_SDIO_IRQ
-	depends on  BCMDHD
 	bool "In-Band Interrupt"
-	default y
+	depends on  BCMDHD
+	#default y
 	---help---
 		Interrupt through SDIO DAT[1]
 endchoice

@@ -9,14 +9,14 @@ config BCMDHD
 config BCMDHD_FW_PATH
 	depends on BCMDHD
 	string "Firmware path"
-	default "/system/vendor/modules/fw_bcmxxxx.bin"
+	default "/lib/firmware/ap6210/fw_bcm40181a2.bin"
 	---help---
 	  Path to the firmware file.
 
 config BCMDHD_NVRAM_PATH
 	depends on BCMDHD
 	string "NVRAM path"
-	default "/system/vendor/modules/nvram_apxxxx.txt"
+	default "/lib/firmware/ap6210/nvram_ap6210.txt"
 	---help---
 	  Path to the calibration file.
 
@@ -39,7 +39,6 @@ config BCMDHD_OOB
 config BCMDHD_SDIO_IRQ
 	bool "In-Band Interrupt"
 	depends on  BCMDHD
-	#default y
 	---help---
 		Interrupt through SDIO DAT[1]
 endchoice
